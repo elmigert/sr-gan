@@ -133,7 +133,7 @@ class AgeDataset(Dataset):
 
     def __getitem__(self, idx):
         # Code for CIL Project
-        if(self.category == 'query')
+        if(self.category == 'query'):
             return dataset_img[idx]
         else:
             retunr dataset_img[idx],label[idx]

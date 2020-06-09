@@ -136,7 +136,7 @@ class AgeDataset(Dataset):
         if(self.category == 'query'):
             return dataset_img[idx]
         else:
-            retunr dataset_img[idx],label[idx]
+            return dataset_img[idx],label[idx]
 
 
                 """

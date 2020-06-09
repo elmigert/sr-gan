@@ -149,7 +149,7 @@ class AgeDataset(Dataset):
         image,label 
         age = self.ages[idx]
         age = torch.tensor(age, dtype=torch.float32)
-        """"
+        """
 
 
 class ImdbWikiDatabasePreparer:

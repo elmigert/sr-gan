@@ -76,7 +76,7 @@ class AgeDataset(Dataset):
             self.label = scores
 
             
-        self.length = self.dataset_img.shape[0]
+        
 
         # Scored images:
         # The folder scored contains 9600 images. The majority of these images are realistic cosmology images, whereas some are images of other subjects or corrupted cosmology images.
@@ -95,6 +95,8 @@ class AgeDataset(Dataset):
             #Normalize:
             self.dataset_img = self.dataset_img/ 127.5 - 1.
             self.label = scores
+            
+        self.length = self.dataset_img.shape[0]
             
                 
             

@@ -21,7 +21,7 @@ from utility import to_normalized_range, download_and_extract_file, unison_shuff
 
 class AgeDataset(Dataset):
     """The dataset class for the age estimation application."""
-    def __init__(self, dataset_path, category, start=None, end=None, gender_filter=None, seed=None, batch_size=None):
+    def __init__(self, dataset_path, category,IMAGE_SIZE, start=None, end=None, gender_filter=None, seed=None, batch_size=None):
         self.category = category
         #Code for new version for the CIL Project
         data_path = './cosmology_aux_data_170429/cosmology_aux_data_170429/'
@@ -29,7 +29,6 @@ class AgeDataset(Dataset):
         if (category == 'query'):
             img_dir = data_path + category + '/' # Directory of the images
             print('Search path: '+ str(img_dir))
-            !ls(img_dir)
             data_path = os.path.join(img_dir,'*g')
             files = glob.glob(data_path)
             print('Length:',len(files))

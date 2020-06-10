@@ -27,6 +27,7 @@ class AgeDataset(Dataset):
         #Code for new version for the CIL Project
         data_path = './cosmology_aux_data_170429/cosmology_aux_data_170429/'
         self.dataset_path = data_path + category + '/' # Directory of the images
+        x_images = []
         if (category == 'query'):
             img_dir = data_path + category + '/' # Directory of the images
             print('Search path: '+ str(img_dir))
@@ -369,6 +370,3 @@ class LapDatabasePreparer:
                                          preserve_range=True)
         imageio.imwrite(os.path.join(output_directory, image_name), cropped_image.astype(np.uint8))
 
-
-if __name__ == '__main__':
-    ImdbWikiDatabasePreparer(preprocessed_image_size=128).download_and_preprocess()

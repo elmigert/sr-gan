@@ -15,6 +15,7 @@ from skimage import transform, color
 from torch.utils.data import Dataset
 from scipy.io import loadmat
 from datetime import datetime
+import pandas as pd
 
 from utility import to_normalized_range, download_and_extract_file, unison_shuffled_copies, seed_all
 

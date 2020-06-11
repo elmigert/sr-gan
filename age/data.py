@@ -30,12 +30,16 @@ class AgeDataset(Dataset):
         self.dataset_path = data_path + category + '/' # Directory of the images
         x_images = []
         try:
-            start = start[0]
+          start = start[0]
+        except: 
+          pass
         try:
             end = end[0]
-        if start = None:
+        except:
+            pass
+        if start == None:
             start = 0
-        if end = None:
+        if end == None:
             end = len(files)
 
         counter = 0
@@ -50,9 +54,9 @@ class AgeDataset(Dataset):
             
             for f1 in files:
                 if counter <= start:
-                    if end = None:
+                    if end == None:
                         pass
-                    elif end >= 
+                    elif end <=  counter:
                         counter = counter + 1
                     else:
                         break    
@@ -65,7 +69,10 @@ class AgeDataset(Dataset):
                             
             print('Cosmology size of dataset ', category, ': ', len(x_images), 'shape: ', x_images[1].shape)  
             self.dataset_img = np.array(x_images)
+            print('Appended')
+            
             self.dataset_img = self.dataset_img/ 127.5 - 1.
+            print('Normalized')
             
             
         # Labeled images:
@@ -79,9 +86,9 @@ class AgeDataset(Dataset):
                 start = df_labeled.shape[0] - start
             for index, row in tqdm(df_labeled.iterrows(), total=df_labeled.shape[0]):
                 if counter <= start:
-                    if end = None:
+                    if end == None:
                         pass
-                    elif end >= 
+                    elif end >= counter:
                         counter = counter + 1
                     else:
                         break    
@@ -101,9 +108,9 @@ class AgeDataset(Dataset):
                 start = df_labeled.shape[0] - start
             for index, row in tqdm(df_labeled.iterrows(), total=df_labeled.shape[0]):
               # Loads all images
-                if end = None:
+                if end == None:
                     pass
-                elif end >= 
+                elif end >= counter:
                     counter = counter + 1
                 else:
                     break                  
@@ -129,9 +136,9 @@ class AgeDataset(Dataset):
                 start = df_labeled.shape[0] - start
             for index, row in tqdm(df_labeled.iterrows(), total=df_labeled.shape[0]):
               # Loads all images
-                if end = None:
+                if end == None:
                     pass
-                elif end >= 
+                elif end >= counter:
                     counter = counter + 1
                 else:
                     break 

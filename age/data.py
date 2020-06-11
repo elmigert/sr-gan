@@ -27,7 +27,7 @@ class AgeDataset(Dataset):
     """The dataset class for the age estimation application."""
     loadLink = False
     def __init__(self, dataset_path, category,IMAGE_SIZE, start=None, end=None, gender_filter=None, seed=None, batch_size=None):
-        if not loadLink:
+        if not self.loadLink:
             self.category = category
             #Code for new version for the CIL Project
             data_path = './cosmology_aux_data_170429/cosmology_aux_data_170429/'
@@ -72,7 +72,7 @@ class AgeDataset(Dataset):
                         x_images.append(np.array(resized))
             
                                 
-                print('Cosmology size of dataset ', category, ': ', len(x_images), 'shape: ', x_images[1].shape)  
+                print('Cosmology size of dataset ', category, ': ', len(x_images), 'shape: ', x_images[0].shape)  
                 self.dataset_img = np.array(x_images)
                 print('Appended')
                 
@@ -103,7 +103,7 @@ class AgeDataset(Dataset):
                           resized = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_AREA)
                           x_images.append(nextp.array(resized).reshape((IMAGE_SIZE, IMAGE_SIZE, 1)))
                 category = 'Labeled only true'
-                print('Cosmology size of dataset ', category, ': ', len(x_images), 'shape: ', x_images[1].shape)  
+                print('Cosmology size of dataset ', category, ': ', len(x_images), 'shape: ', x_images[0].shape)  
                 self.dataset_img = np.array(x_images)
                 
 
@@ -123,7 +123,7 @@ class AgeDataset(Dataset):
                     resized = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_AREA)
                     x_images.append(np.array(resized).reshape((IMAGE_SIZE, IMAGE_SIZE, 1)))
                 scores = df_labeled['Actual']
-                print('Cosmology Size of dataset ', category, ': ', len(x_images), 'shape: ', x_images[1].shape) 
+                print('Cosmology Size of dataset ', category, ': ', len(x_images), 'shape: ', x_images[0].shape) 
                 self.dataset_img = np.array(x_images)
                 #Normalize:
                 self.dataset_img = self.dataset_img/ 127.5 - 1.

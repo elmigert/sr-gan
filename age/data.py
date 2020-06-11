@@ -2,6 +2,7 @@
 Code for accessing the data in the database easily.
 """
 import csv
+import cv2
 import math
 import os
 import shutil
@@ -39,8 +40,7 @@ class AgeDataset(Dataset):
             pass
         if start == None:
             start = 0
-        if end == None:
-            end = len(files)
+
 
         counter = 0
         if (category == 'query'):
@@ -49,6 +49,8 @@ class AgeDataset(Dataset):
             data_path = os.path.join(img_dir,'*g')
             files = glob.glob(data_path)
             print('Length:',len(files))
+            if end == None:
+                end = len(files)
             if start < 0:
                 start = len(files) - start
             

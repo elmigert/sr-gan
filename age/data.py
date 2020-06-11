@@ -18,145 +18,149 @@ from scipy.io import loadmat
 from datetime import datetime
 import pandas as pd
 from tqdm import tqdm
-
+import glob
 from utility import to_normalized_range, download_and_extract_file, unison_shuffled_copies, seed_all
+
 
 
 class AgeDataset(Dataset):
     """The dataset class for the age estimation application."""
+    loadLink = False
     def __init__(self, dataset_path, category,IMAGE_SIZE, start=None, end=None, gender_filter=None, seed=None, batch_size=None):
-        self.category = category
-        #Code for new version for the CIL Project
-        data_path = './cosmology_aux_data_170429/cosmology_aux_data_170429/'
-        self.dataset_path = data_path + category + '/' # Directory of the images
-        x_images = []
-        try:
-          start = start[0]
-        except: 
-          pass
-        try:
-            end = end[0]
-        except:
-            pass
-        if start == None:
-            start = 0
+        if not loadLink:
+            self.category = category
+            #Code for new version for the CIL Project
+            data_path = './cosmology_aux_data_170429/cosmology_aux_data_170429/'
+            self.dataset_path = data_path + category + '/' # Directory of the images
+            x_images = []
+            try:
+              start = start[0]
+            except: 
+              pass
+            try:
+                end = end[0]
+            except:
+                pass
+            if start == None:
+                start = 0
 
 
-        counter = 0
-        if (category == 'query'):
-            img_dir = data_path + category + '/' # Directory of the images
-            print('Search path: '+ str(img_dir))
-            data_path = os.path.join(img_dir,'*g')
-            files = glob.glob(data_path)
-            print('Length:',len(files))
-            if end == None:
-                end = len(files)
-            if start < 0:
-                start = len(files) - start
+            counter = 0
+            if (category == 'query'):
+                img_dir = data_path + category + '/' # Directory of the images
+                print('Search path: '+ str(img_dir))
+                data_path = os.path.join(img_dir,'*g')
+                files = glob.glob(data_path)
+                print('Length:',len(files))
+                if end == None:
+                    end = len(files)
+                if start < 0:
+                    start = len(files) - start
+                
+                for f1 in files:
+                    if counter <= start:
+                        if end == None:
+                            pass
+                        elif end <=  counter:
+                            counter = counter + 1
+                        else:
+                            break    
+                        #print('f1:', f1)
+                        img = cv2.imread(f1, cv2.IMREAD_GRAYSCALE)
+                        #print('img:',img)
+                        resized = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_AREA)
+                        x_images.append(np.array(resized))
             
-            for f1 in files:
-                if counter <= start:
-                    if end == None:
-                        pass
-                    elif end <=  counter:
-                        counter = counter + 1
-                    else:
-                        break    
-                    #print('f1:', f1)
-                    img = cv2.imread(f1, cv2.IMREAD_GRAYSCALE)
-                    #print('img:',img)
-                    resized = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_AREA)
-                    x_images.append(np.array(resized))
-        
-                            
-            print('Cosmology size of dataset ', category, ': ', len(x_images), 'shape: ', x_images[1].shape)  
-            self.dataset_img = np.array(x_images)
-            print('Appended')
-            
-            self.dataset_img = self.dataset_img/ 127.5 - 1.
-            print('Normalized')
-            
-            
-        # Labeled images:
-        # The folder labeled contains 1200 images. The corresponding labels of each image can be found in <labeled.csv> at the top-level.
-        # Make proper use of the scores and labels to build your generative model and learn the similarity function. 
-        # Note: We use only the correct labeled ones
-        elif ((category == 'labeledTrue')):
-            category = "labeled"
-            df_labeled = pd.read_csv(data_path + category + '.csv')
-            if start < 0:
-                start = df_labeled.shape[0] - start
-            for index, row in tqdm(df_labeled.iterrows(), total=df_labeled.shape[0]):
-                if counter <= start:
+                                
+                print('Cosmology size of dataset ', category, ': ', len(x_images), 'shape: ', x_images[1].shape)  
+                self.dataset_img = np.array(x_images)
+                print('Appended')
+                
+                self.dataset_img = self.dataset_img/ 127.5 - 1.
+                print('Normalized')
+                
+                
+            # Labeled images:
+            # The folder labeled contains 1200 images. The corresponding labels of each image can be found in <labeled.csv> at the top-level.
+            # Make proper use of the scores and labels to build your generative model and learn the similarity function. 
+            # Note: We use only the correct labeled ones
+            elif ((category == 'labeledTrue')):
+                category = "labeled"
+                df_labeled = pd.read_csv(data_path + category + '.csv')
+                if start < 0:
+                    start = df_labeled.shape[0] - start
+                for index, row in tqdm(df_labeled.iterrows(), total=df_labeled.shape[0]):
+                    if counter <= start:
+                        if end == None:
+                            pass
+                        elif end >= counter:
+                            counter = counter + 1
+                        else:
+                            break    
+                        # Only loads the images with score 1 (which are galaxy images)
+                        if row['Actual'] == 1.0:
+                          img = cv2.imread(data_path + category + '/' + str(int(row['Id'])) + '.png', cv2.IMREAD_GRAYSCALE)
+                          resized = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_AREA)
+                          x_images.append(nextp.array(resized).reshape((IMAGE_SIZE, IMAGE_SIZE, 1)))
+                category = 'Labeled only true'
+                print('Cosmology size of dataset ', category, ': ', len(x_images), 'shape: ', x_images[1].shape)  
+                self.dataset_img = np.array(x_images)
+                
+
+            elif ((category == 'labeled')):
+                df_labeled = pd.read_csv(data_path + category + '.csv')
+                if start < 0:
+                    start = df_labeled.shape[0] - start
+                for index, row in tqdm(df_labeled.iterrows(), total=df_labeled.shape[0]):
+                  # Loads all images
                     if end == None:
                         pass
                     elif end >= counter:
                         counter = counter + 1
                     else:
-                        break    
-                    # Only loads the images with score 1 (which are galaxy images)
-                    if row['Actual'] == 1.0:
-                      img = cv2.imread(data_path + category + '/' + str(int(row['Id'])) + '.png', cv2.IMREAD_GRAYSCALE)
-                      resized = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_AREA)
-                      x_images.append(nextp.array(resized).reshape((IMAGE_SIZE, IMAGE_SIZE, 1)))
-            category = 'Labeled only true'
-            print('Cosmology size of dataset ', category, ': ', len(x_images), 'shape: ', x_images[1].shape)  
-            self.dataset_img = np.array(x_images)
+                        break                  
+                    img = cv2.imread(data_path + category + '/' + str(int(row['Id'])) + '.png', cv2.IMREAD_GRAYSCALE)
+                    resized = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_AREA)
+                    x_images.append(np.array(resized).reshape((IMAGE_SIZE, IMAGE_SIZE, 1)))
+                scores = df_labeled['Actual']
+                print('Cosmology Size of dataset ', category, ': ', len(x_images), 'shape: ', x_images[1].shape) 
+                self.dataset_img = np.array(x_images)
+                #Normalize:
+                self.dataset_img = self.dataset_img/ 127.5 - 1.
+                self.label = scores
+
+                
             
 
-        elif ((category == 'labeled')):
-            df_labeled = pd.read_csv(data_path + category + '.csv')
-            if start < 0:
-                start = df_labeled.shape[0] - start
-            for index, row in tqdm(df_labeled.iterrows(), total=df_labeled.shape[0]):
-              # Loads all images
-                if end == None:
-                    pass
-                elif end >= counter:
-                    counter = counter + 1
-                else:
-                    break                  
-                img = cv2.imread(data_path + category + '/' + str(int(row['Id'])) + '.png', cv2.IMREAD_GRAYSCALE)
-                resized = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_AREA)
-                x_images.append(np.array(resized).reshape((IMAGE_SIZE, IMAGE_SIZE, 1)))
-            scores = df_labeled['Actual']
-            print('Cosmology Size of dataset ', category, ': ', len(x_images), 'shape: ', x_images[1].shape) 
-            self.dataset_img = np.array(x_images)
-            #Normalize:
-            self.dataset_img = self.dataset_img/ 127.5 - 1.
-            self.label = scores
-
+            # Scored images:
+            # The folder scored contains 9600 images. The majority of these images are realistic cosmology images, whereas some are images of other subjects or corrupted cosmology images.
+            # The corresponding similarity scores of each image can be found in <scored.csv> at the top-level.
+            elif ((category == 'scored')):
+                df_labeled = pd.read_csv(data_path + category + '.csv')
+                if start < 0:
+                    start = df_labeled.shape[0] - start
+                for index, row in tqdm(df_labeled.iterrows(), total=df_labeled.shape[0]):
+                  # Loads all images
+                    if end == None:
+                        pass
+                    elif end >= counter:
+                        counter = counter + 1
+                    else:
+                        break 
+                    img = cv2.imread(data_path + category + '/' + str(int(row['Id'])) + '.png', cv2.IMREAD_GRAYSCALE)
+                    resized = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_AREA)
+                    x_images.append(np.array(resized).reshape((IMAGE_SIZE, IMAGE_SIZE, 1)))
+                scores = df_labeled['Actual']
+                print('Cosmology Size of dataset ', category, ': ', len(x_images), 'shape: ', x_images[1].shape) 
+                
+                self.dataset_img = np.array(x_images)
+                #Normalize:
+                self.dataset_img = self.dataset_img/ 127.5 - 1.
+                self.label = scores
+                
+            self.length = self.dataset_img.shape[0]
             
-        
-
-        # Scored images:
-        # The folder scored contains 9600 images. The majority of these images are realistic cosmology images, whereas some are images of other subjects or corrupted cosmology images.
-        # The corresponding similarity scores of each image can be found in <scored.csv> at the top-level.
-        elif ((category == 'scored')):
-            df_labeled = pd.read_csv(data_path + category + '.csv')
-            if start < 0:
-                start = df_labeled.shape[0] - start
-            for index, row in tqdm(df_labeled.iterrows(), total=df_labeled.shape[0]):
-              # Loads all images
-                if end == None:
-                    pass
-                elif end >= counter:
-                    counter = counter + 1
-                else:
-                    break 
-                img = cv2.imread(data_path + category + '/' + str(int(row['Id'])) + '.png', cv2.IMREAD_GRAYSCALE)
-                resized = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_AREA)
-                x_images.append(np.array(resized).reshape((IMAGE_SIZE, IMAGE_SIZE, 1)))
-            scores = df_labeled['Actual']
-            print('Cosmology Size of dataset ', category, ': ', len(x_images), 'shape: ', x_images[1].shape) 
-            
-            self.dataset_img = np.array(x_images)
-            #Normalize:
-            self.dataset_img = self.dataset_img/ 127.5 - 1.
-            self.label = scores
-            
-        self.length = self.dataset_img.shape[0]
-            
+        else:
                 
             
 

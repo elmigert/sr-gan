@@ -161,7 +161,7 @@ class AgeDataset(Dataset):
             self.length = self.dataset_img.shape[0]
             
         else:
-                
+             pass   
             
 
 
@@ -185,10 +185,9 @@ class AgeDataset(Dataset):
         self.image_names = np.array(image_names[start:end])
         self.ages = np.array(ages[start:end], dtype=np.float32)
         if self.image_names.shape[0] < batch_size:
-            repeats = math.ceil(batch_size / self.image_names.shape[0])
-            self.image_names = np.repeat(self.image_names, repeats)
-            self.ages = np.repeat(self.ages, repeats)
-        self.length = self.ages.shape[0]
+          repeats = math.ceil(batch_size / self.image_names.shape[0])
+          self.image_names = np.repeat(self.image_names, repeats)
+          self.ages = np.repeat(self.ages, repeats)
         """
 
     def __len__(self):

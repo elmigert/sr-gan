@@ -25,8 +25,9 @@ from utility import to_normalized_range, download_and_extract_file, unison_shuff
 
 class AgeDataset(Dataset):
     """The dataset class for the age estimation application."""
-    loadLink = False
+   
     def __init__(self, dataset_path, category,IMAGE_SIZE, start=None, end=None, gender_filter=None, seed=None, batch_size=None):
+        self.loadLink = False
         if not self.loadLink:
             self.category = category
             #Code for new version for the CIL Project
@@ -58,7 +59,7 @@ class AgeDataset(Dataset):
                     start = len(files) - start
                 
                 for f1 in files:
-                    if counter <= start:
+                    if counter >= start:
                         if end == None:
                             pass
                         elif end <=  counter:
@@ -69,10 +70,12 @@ class AgeDataset(Dataset):
                         img = cv2.imread(f1, cv2.IMREAD_GRAYSCALE)
                         #print('img:',img)
                         resized = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_AREA)
-                        x_images.append(np.array(resized))
+                        x_images.append(np.array(resized).reshape((IMAGE_SIZE, IMAGE_SIZE, 1)))
+                    else:
+                        counter = counter + 1
             
                                 
-                print('Cosmology size of dataset ', category, ': ', len(x_images), 'shape: ', x_images[0].shape)  
+                print('Cosmology size of dataset ', category, ': ', len(x_images), 'shape: ', x_images[1].shape)  
                 self.dataset_img = np.array(x_images)
                 print('Appended')
                 
@@ -90,7 +93,7 @@ class AgeDataset(Dataset):
                 if start < 0:
                     start = df_labeled.shape[0] - start
                 for index, row in tqdm(df_labeled.iterrows(), total=df_labeled.shape[0]):
-                    if counter <= start:
+                    if counter >= start:
                         if end == None:
                             pass
                         elif end >= counter:
@@ -103,7 +106,7 @@ class AgeDataset(Dataset):
                           resized = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_AREA)
                           x_images.append(nextp.array(resized).reshape((IMAGE_SIZE, IMAGE_SIZE, 1)))
                 category = 'Labeled only true'
-                print('Cosmology size of dataset ', category, ': ', len(x_images), 'shape: ', x_images[0].shape)  
+                print('Cosmology size of dataset ', category, ': ', len(x_images), 'shape: ', x_images[1].shape)  
                 self.dataset_img = np.array(x_images)
                 
 
@@ -112,18 +115,21 @@ class AgeDataset(Dataset):
                 if start < 0:
                     start = df_labeled.shape[0] - start
                 for index, row in tqdm(df_labeled.iterrows(), total=df_labeled.shape[0]):
-                  # Loads all images
-                    if end == None:
-                        pass
-                    elif end >= counter:
-                        counter = counter + 1
+                    # Loads all images
+                    if counter >= start:
+                        if end == None:
+                            pass
+                        elif end >= counter:
+                            counter = counter + 1
+                        else:
+                            break                  
+                        img = cv2.imread(data_path + category + '/' + str(int(row['Id'])) + '.png', cv2.IMREAD_GRAYSCALE)
+                        resized = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_AREA)
+                        x_images.append(np.array(resized).reshape((IMAGE_SIZE, IMAGE_SIZE, 1)))
                     else:
-                        break                  
-                    img = cv2.imread(data_path + category + '/' + str(int(row['Id'])) + '.png', cv2.IMREAD_GRAYSCALE)
-                    resized = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_AREA)
-                    x_images.append(np.array(resized).reshape((IMAGE_SIZE, IMAGE_SIZE, 1)))
+                        counter = counter + 1
                 scores = df_labeled['Actual']
-                print('Cosmology Size of dataset ', category, ': ', len(x_images), 'shape: ', x_images[0].shape) 
+                print('Cosmology Size of dataset ', category, ': ', len(x_images), 'shape: ', x_images[1].shape) 
                 self.dataset_img = np.array(x_images)
                 #Normalize:
                 self.dataset_img = self.dataset_img/ 127.5 - 1.
@@ -141,17 +147,21 @@ class AgeDataset(Dataset):
                     start = df_labeled.shape[0] - start
                 for index, row in tqdm(df_labeled.iterrows(), total=df_labeled.shape[0]):
                   # Loads all images
-                    if end == None:
-                        pass
-                    elif end >= counter:
-                        counter = counter + 1
+                    if counter >= start:
+                        if end == None:
+                            pass
+                        elif end >= counter:
+                            counter = counter + 1
+                        else:
+                            break 
+                        img = cv2.imread(data_path + category + '/' + str(int(row['Id'])) + '.png', cv2.IMREAD_GRAYSCALE)
+                        resized = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_AREA)
+                        x_images.append(np.array(resized).reshape((IMAGE_SIZE, IMAGE_SIZE, 1)))
                     else:
-                        break 
-                    img = cv2.imread(data_path + category + '/' + str(int(row['Id'])) + '.png', cv2.IMREAD_GRAYSCALE)
-                    resized = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_AREA)
-                    x_images.append(np.array(resized).reshape((IMAGE_SIZE, IMAGE_SIZE, 1)))
+                        counter = counter + 1
+                    
                 scores = df_labeled['Actual']
-                print('Cosmology Size of dataset ', category, ': ', len(x_images), 'shape: ', x_images[1].shape) 
+                print('Cosmology Size of dataset ', category, ': ', len(x_images), 'shape: ', x_images[0].shape) 
                 
                 self.dataset_img = np.array(x_images)
                 #Normalize:

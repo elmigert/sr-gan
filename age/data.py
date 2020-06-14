@@ -21,6 +21,7 @@ from tqdm import tqdm
 import glob
 from utility import to_normalized_range, download_and_extract_file, unison_shuffled_copies, seed_all
 from skimage import transform,io
+import scipy.misc
 
 
 class AgeDataset(Dataset):
@@ -64,26 +65,23 @@ class AgeDataset(Dataset):
             
             for f1 in files:
                 #print(counter)
-                if counter >= start:
-                    if end == None:
-                        pass
-                    elif end >=  counter:
-                        counter = counter + 1
-                    else:
-                        break
-                    if self.loadLink:
-                        self.image_paths.append(os.path.join(f1))
-                    else:
 
-                        #print('f1:', f1)
-                        img = cv2.imread(f1, cv2.IMREAD_GRAYSCALE)
-                        #print('img:',img)
-                        resized = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_AREA)
-                        x_images.append(np.array(resized).reshape((IMAGE_SIZE, IMAGE_SIZE, 1)))
+                if self.loadLink:
+                    self.image_paths.append(os.path.join(f1))
                 else:
-                      counter = counter + 1
-        
-            if self.loadLink:
+
+                    #print('f1:', f1)
+                    img = cv2.imread(f1, cv2.IMREAD_GRAYSCALE)
+                    #print('img:',img)
+                    resized = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_AREA)
+                    x_images.append(np.array(resized).reshape((IMAGE_SIZE, IMAGE_SIZE, 1)))
+            
+
+            if self.loadLink:         
+              if end == None:
+                self.image_paths = self.image_paths[start:]
+              else:
+                self.image_paths = self.image_paths[start:end]
               print('Cosmology size of dataset ', category, ': ', len(self.image_paths))
             else:              
               print('Cosmology size of dataset ', category, ': ', len(self.x_images), 'shape: ', self.x_images[1].shape)  
@@ -104,24 +102,24 @@ class AgeDataset(Dataset):
                 start = df_labeled.shape[0] + start
 
             for index, row in tqdm(df_labeled.iterrows(), total=df_labeled.shape[0]):
-                if counter >= start:
-                    if end == None:
-                        pass
-                    elif end >= counter:
-                        counter = counter + 1
+                # Only loads the images with score 1 (which are galaxy images)
+                if row['Actual'] == 1.0:
+                    if self.loadLink:
+                        self.image_paths.append(os.path.join(data_path + category + '/' + str(int(row['Id'])) + '.png'))
                     else:
-                        break    
-                    # Only loads the images with score 1 (which are galaxy images)
-                    if row['Actual'] == 1.0:
-                        if self.loadLink:
-                            self.image_paths.append(os.path.join(data_path + category + '/' + str(int(row['Id'])) + '.png'))
-                        else:
-                          img = cv2.imread(data_path + category + '/' + str(int(row['Id'])) + '.png', cv2.IMREAD_GRAYSCALE)
-                          resized = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_AREA)
-                          self.x_images.append(nextp.array(resized).reshape((IMAGE_SIZE, IMAGE_SIZE, 1)))
+                      img = cv2.imread(data_path + category + '/' + str(int(row['Id'])) + '.png', cv2.IMREAD_GRAYSCALE)
+                      resized = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_AREA)
+                      self.x_images.append(nextp.array(resized).reshape((IMAGE_SIZE, IMAGE_SIZE, 1)))
+
             category = 'Labeled only true'
 
             if self.loadLink:
+              if end == None:
+                
+                self.image_paths = self.image_paths[start:]
+              else:
+                
+                self.image_paths = self.image_paths[start:end]
               print('Cosmology size of dataset ', category, ': ', len(self.image_paths))
             else:              
               print('Cosmology size of dataset ', category, ': ', len(self.x_images), 'shape: ', self.x_images[1].shape)  
@@ -138,24 +136,20 @@ class AgeDataset(Dataset):
             if start < 0:
                 start = df_labeled.shape[0] + start
             for index, row in tqdm(df_labeled.iterrows(), total=df_labeled.shape[0]):
-                # Loads all images
-                if counter >= start:
-                    if end == None:
-                        pass
-                    elif end >= counter:
-                        counter = counter + 1
-                    else:
-                        break
-                    if self.loadLink:
-                        self.image_paths.append(os.path.join(data_path + category + '/' + str(int(row['Id'])) + '.png'))
-                        self.label.append(row['Actual'])
-                    else:
-                        img = cv2.imread(data_path + category + '/' + str(int(row['Id'])) + '.png', cv2.IMREAD_GRAYSCALE)
-                        resized = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_AREA)
-                        self.x_images.append(np.array(resized).reshape((IMAGE_SIZE, IMAGE_SIZE, 1)))
+                if self.loadLink:
+                    self.image_paths.append(os.path.join(data_path + category + '/' + str(int(row['Id'])) + '.png'))
+                    self.label.append(row['Actual'])
                 else:
-                    counter = counter + 1
+                    img = cv2.imread(data_path + category + '/' + str(int(row['Id'])) + '.png', cv2.IMREAD_GRAYSCALE)
+                    resized = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_AREA)
+                    self.x_images.append(np.array(resized).reshape((IMAGE_SIZE, IMAGE_SIZE, 1)))
             if self.loadLink:
+              if end == None:
+                self.label = self.label[start:]
+                self.image_paths = self.image_paths[start:]
+              else:
+                self.label = self.label[start:end]
+                self.image_paths = self.image_paths[start:end]
               print('Cosmology size of dataset ', category, ': ', len(self.image_paths), ', labels :',len(self.label))
             else:              
               print('Cosmology size of dataset ', category, ': ', len(self.x_images), 'shape: ', self.x_images[1].shape)  
@@ -177,14 +171,7 @@ class AgeDataset(Dataset):
                 start = df_labeled.shape[0] + start
             
             for index, row in tqdm(df_labeled.iterrows(), total=df_labeled.shape[0]):
-              # Loads all images
-                if counter >= start:
-                    if end == None:
-                        pass
-                    elif end >= counter:
-                        counter = counter + 1
-                    else:
-                        break
+                    # Loads all images
                     if self.loadLink:
                         self.image_paths.append(os.path.join(data_path + category + '/' + str(int(row['Id'])) + '.png'))
                         self.label.append(row['Actual'])
@@ -192,9 +179,13 @@ class AgeDataset(Dataset):
                         img = cv2.imread(data_path + category + '/' + str(int(row['Id'])) + '.png', cv2.IMREAD_GRAYSCALE)
                         resized = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_AREA)
                         self.x_images.append(np.array(resized).reshape((IMAGE_SIZE, IMAGE_SIZE, 1)))
-                else:
-                    counter = counter + 1
             if self.loadLink:
+              if end == None:
+                self.label = self.label[start:]
+                self.image_paths = self.image_paths[start:]
+              else:
+                self.label = self.label[start:end]
+                self.image_paths = self.image_paths[start:end]
               print('Cosmology size of dataset ', category, ': ', len(self.image_paths))
             else:              
               print('Cosmology size of dataset ', category, ': ', len(self.x_images), 'shape: ', self.x_images[1].shape)  
@@ -205,17 +196,15 @@ class AgeDataset(Dataset):
               scores = df_labeled['Actual']
               self.label = scores
         if self.loadLink:
-            self.length = len(self.image_paths)
+          self.length = len(self.image_paths)
             #print('Length set to ',self.length)
-            if len(self.image_paths) < batch_size:
-                repeats = math.ceil(batch_size /len(self.image_paths))
-                self.image_paths = np.repeat(self.image_paths, repeats)
-                try:
-                    self.label = np.repeat(self.label, repeats)
-                except:
-                    pass
-                    
-            
+          if len(self.image_paths) < batch_size:
+              repeats = math.ceil(batch_size /len(self.image_paths))
+              self.image_paths = np.repeat(self.image_paths, repeats)
+              try:
+                  self.label = np.repeat(self.label, repeats)
+              except:
+                  pass     
         else:
           self.length = self.dataset_img.shape[0]
 
@@ -260,13 +249,25 @@ class AgeDataset(Dataset):
         self.printedItems = self.printedItems + 1
         if self.loadLink:
             image_name = self.image_paths[idx]
-            image = torch.tensor(resized.astype(np.float32))
+            image = imageio.imread(os.path.join(image_name))
             image = to_normalized_range(image)
-            image = image.reshape((1,IMAGE_SIZE,IMAGE_SIZE))
+            image = transform.resize(image, (self.IMAGE_SIZE,self.IMAGE_SIZE), mode='symmetric', preserve_range=True)
+            #Uncomment and comment the reshape,
+            #,if every picture should be done in color mode: Remember to change the dimension in the network from 1 to 3!
+            #if len(image.shape) == 2:
+            #    image = color.gray2rgb(image)
             #image = image.transpose((2, 0, 1))
-            label_image = self.label[idx]
-            label_image = torch.tensor(label_image, dtype=torch.float32)
-            return image, label_image
+            image = image.reshape((1,self.IMAGE_SIZE,self.IMAGE_SIZE))
+            image = torch.tensor(image.astype(np.float32))
+            if self.label:
+              label_image = self.label[idx]
+              label_image = torch.tensor(label_image, dtype=torch.float32)
+              return image, label_image
+            else:
+              label_image = self.label
+              label_image = torch.tensor(label_image, dtype=torch.float32)
+              return image, label_image
+
         else:
             # Code for CIL Project
             if(self.category == 'query'):

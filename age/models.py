@@ -38,7 +38,7 @@ class Generator(nn.Module):
         self.layer1 = transpose_convolution(conv_dim * 8, conv_dim * 4, 4)
         self.layer2 = transpose_convolution(conv_dim * 4, conv_dim * 2, 4)
         self.layer3 = transpose_convolution(conv_dim * 2, conv_dim, 4)
-        self.layer4 = transpose_convolution(conv_dim, 3, 4, bn=False)
+        self.layer4 = transpose_convolution(conv_dim, 1, 4, bn=False)
         self.input_size = z_dim
         
         """ --- OLD CODE ---
@@ -56,7 +56,7 @@ class Generator(nn.Module):
         out = leaky_relu(self.layer1(out), 0.05)    # (?, 256, 8, 8)
         out = leaky_relu(self.layer2(out), 0.05)    # (?, 128, 16, 16)
         out = leaky_relu(self.layer3(out), 0.05)    # (?, 64, 32, 32)
-        out = tanh(self.layer4(out))                # (?, 3, 64, 64)
+        out = tanh(self.layer4(out))                # (?, 1, 64, 64)
         return out
 
 

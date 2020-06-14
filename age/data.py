@@ -20,18 +20,19 @@ import pandas as pd
 from tqdm import tqdm
 import glob
 from utility import to_normalized_range, download_and_extract_file, unison_shuffled_copies, seed_all
-
+from skimage import transform,io
 
 
 class AgeDataset(Dataset):
     """The dataset class for the age estimation application."""
    
-    def __init__(self, dataset_path, category,IMAGE_SIZE, start=None, end=None, gender_filter=None, seed=None, batch_size=None):
+    def __init__(self, dataset_path, category,IMAGE_SIZE=1000, start=None, end=None, gender_filter=None, seed=None, batch_size=None):
         self.loadLink = True
         self.has_labels = False
+        self.printedItems = 0
         self.image_paths = []
         self.label = []
-        
+        self.IMAGE_SIZE = IMAGE_SIZE
         self.category = category
         #Code for new version for the CIL Project
         data_path = './cosmology_aux_data_170429/cosmology_aux_data_170429/'
@@ -218,11 +219,7 @@ class AgeDataset(Dataset):
         else:
           self.length = self.dataset_img.shape[0]
 
-        try:
-            print("Lenght label", len(self.label))
-            self.test = self.label
-        except:
-            print("No Labels")
+
    
             
         
@@ -257,21 +254,18 @@ class AgeDataset(Dataset):
 
 
     def __getitem__(self, idx):
-        print("Get item: ",str(idx) +  self.image_paths[idx])
-        print(len(self.label))
-        print(len(self.test))
+        #print("Get item: ",str(idx) +  self.image_paths[idx])
+        #print("Label Length",len(self.label))
+        #print("Test Length",len(self.test))
+        self.printedItems = self.printedItems + 1
         if self.loadLink:
             image_name = self.image_paths[idx]
-            image = imageio.imread(os.path.join(image_name))
-            #image = image.transpose((2, 0, 1))
-            #image = image/ 127.5 - 1.
-            image = torch.tensor(image.astype(np.float32))
+            image = torch.tensor(resized.astype(np.float32))
             image = to_normalized_range(image)
-            #print(image)
+            image = image.reshape((1,IMAGE_SIZE,IMAGE_SIZE))
+            #image = image.transpose((2, 0, 1))
             label_image = self.label[idx]
-            print(label_image)
             label_image = torch.tensor(label_image, dtype=torch.float32)
-
             return image, label_image
         else:
             # Code for CIL Project

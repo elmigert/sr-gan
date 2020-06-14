@@ -40,7 +40,15 @@ class Generator(nn.Module):
         self.layer3 = transpose_convolution(conv_dim * 2, conv_dim, 4)
         self.layer4 = transpose_convolution(conv_dim, 3, 4, bn=False)
         self.input_size = z_dim
-
+        
+        """ --- OLD CODE ---
+        self.fc = transpose_convolution(z_dim, conv_dim * 8, int(image_size / 16), 1, 0, bn=False)
+        self.layer1 = transpose_convolution(conv_dim * 8, conv_dim * 4, 4)
+        self.layer2 = transpose_convolution(conv_dim * 4, conv_dim * 2, 4)
+        self.layer3 = transpose_convolution(conv_dim * 2, conv_dim, 4)
+        self.layer4 = transpose_convolution(conv_dim, 3, 4, bn=False)
+        self.input_size = z_dim
+        """
     def forward(self, z):
         """The forward pass of the network."""
         z = z.view(z.size(0), z.size(1), 1, 1)
@@ -58,7 +66,7 @@ class Discriminator(nn.Module):
         seed_all(0)
         super().__init__()
         self.number_of_outputs = number_of_outputs
-        self.layer1 = convolution(3, conv_dim, 4, bn=False)
+        self.layer1 = convolution(1, conv_dim, 4, bn=False)
         self.layer2 = convolution(conv_dim, conv_dim * 2, 4)
         self.layer3 = convolution(conv_dim * 2, conv_dim * 4, 4)
         self.layer4 = convolution(conv_dim * 4, conv_dim * 8, 4)

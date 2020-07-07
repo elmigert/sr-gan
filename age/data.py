@@ -39,6 +39,7 @@ class AgeDataset(Dataset):
         data_path = './cosmology_aux_data_170429/cosmology_aux_data_170429/'
         self.dataset_path = data_path + category + '/' # Directory of the images
         self.x_images = []
+        self.pathBlackImages = '/content/blackImage.jpg'
         try:
           start = start[0]
         except: 
@@ -143,6 +144,11 @@ class AgeDataset(Dataset):
                     img = cv2.imread(data_path + category + '/' + str(int(row['Id'])) + '.png', cv2.IMREAD_GRAYSCALE)
                     resized = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_AREA)
                     self.x_images.append(np.array(resized).reshape((IMAGE_SIZE, IMAGE_SIZE, 1)))
+
+                #Add black images
+                number = 300
+                #for i in range(number):
+                    
             if self.loadLink:
               if end == None:
                 self.label = self.label[start:]
@@ -264,8 +270,8 @@ class AgeDataset(Dataset):
               label_image = torch.tensor(label_image, dtype=torch.float32)
               return image, label_image
             else:
-              label_image = self.label
-              label_image = torch.tensor(label_image, dtype=torch.float32)
+              label_image = idx
+              #label_image = torch.tensor(label_image, dtype=torch.float32)
               return image, label_image
 
         else:

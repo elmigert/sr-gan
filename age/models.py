@@ -34,12 +34,14 @@ class Generator(nn.Module):
     def __init__(self, z_dim=256, image_size=128, conv_dim=64):
         seed_all(0)
         super().__init__()
-        self.fc = transpose_convolution(c_in=z_dim, c_out=conv_dim * 8, k_size=int(image_size / 16), stride=1, pad=0, bn=False)
-        self.layer1 = transpose_convolution(c_in=conv_dim * 8, c_out=conv_dim * 4, k_size=4,stride=1)
-        self.layer2 = transpose_convolution(conv_dim * 4, conv_dim * 2, 4,stride=1)
-        self.layer3 = transpose_convolution(conv_dim * 2, conv_dim, 4,stride=1)
-        self.layer4 = transpose_convolution(conv_dim , conv_dim, 4,stride=1)
-        self.layer5 = transpose_convolution(conv_dim, 1, 4,stride=1, bn=False)
+        self.fc = transpose_convolution(c_in=z_dim, c_out=conv_dim * 8, k_size=int(image_size / 16), stride=2, pad=0, bn=False)
+        #self.fc = transpose_convolution(c_in=z_dim, c_out=conv_dim * 8, k_size=4, stride=2, pad=0, bn=False)
+        self.layer1 = transpose_convolution(c_in=conv_dim * 8, c_out=conv_dim * 8, k_size=4,stride=2)
+        #self.layer2 = transpose_convolution(c_in=conv_dim * 8, c_out=conv_dim * 8, k_size=4,stride=1)
+        self.layer2 = transpose_convolution(c_in=conv_dim * 8, c_out=conv_dim * 4, k_size=4,stride=2)
+        self.layer3 = transpose_convolution(conv_dim * 4, conv_dim * 2, 4,stride=2)
+        self.layer4 = transpose_convolution(conv_dim * 2, conv_dim, 4,stride=2)
+        self.layer5 = transpose_convolution(conv_dim, 1, 3,stride=1, bn=False)
         self.input_size = z_dim
         
         """ --- OLD CODE ---
@@ -54,10 +56,10 @@ class Generator(nn.Module):
         """The forward pass of the network."""
         z = z.view(z.size(0), z.size(1), 1, 1)
         out = self.fc(z)                            # (?, 512, 4, 4)
-        out = leaky_relu(self.layer1(out), 0.05)    # (?, 256, 8, 8)
-        out = leaky_relu(self.layer2(out), 0.05)    # (?, 128, 16, 16)
-        out = leaky_relu(self.layer3(out), 0.05)    # (?, 64, 32, 32)
-        out = leaky_relu(self.layer4(out), 0.05)    # (?, 32, 64, 64)
+        out = leaky_relu(self.layer1(out), 0.05)    # (?, 512, 4, 4)
+        out = leaky_relu(self.layer2(out), 0.05)    # (?, 512, 4, 4)
+        out = leaky_relu(self.layer3(out), 0.05)    # (?, 256, 8, 8)
+        out = leaky_relu(self.layer4(out), 0.05)    # (?, 128, 16, 16)   # (?, 64, 32, 32)
         out = tanh(self.layer5(out))                # (?, 1, 128, 128)
         return out
 

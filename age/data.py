@@ -37,6 +37,7 @@ class AgeDataset(Dataset):
         self.category = category
         #Code for new version for the CIL Project
         data_path = './cosmology_aux_data_170429/cosmology_aux_data_170429/'
+        self.path_black_image = '/content/drive/My Drive/05_CIL_Project/Black_Image.png'
         self.dataset_path = data_path + category + '/' # Directory of the images
         self.x_images = []
         self.pathBlackImages = '/content/blackImage.jpg'
@@ -146,7 +147,11 @@ class AgeDataset(Dataset):
                     self.x_images.append(np.array(resized).reshape((IMAGE_SIZE, IMAGE_SIZE, 1)))
 
                 #Add black images
-                number = 300
+                number = 400
+                for i in range(number):
+                    self.image_paths.append(self.path_black_image)
+                    self.label.append(0)
+                    
                 #for i in range(number):
                     
             if self.loadLink:
@@ -185,6 +190,10 @@ class AgeDataset(Dataset):
                         img = cv2.imread(data_path + category + '/' + str(int(row['Id'])) + '.png', cv2.IMREAD_GRAYSCALE)
                         resized = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE), interpolation=cv2.INTER_AREA)
                         self.x_images.append(np.array(resized).reshape((IMAGE_SIZE, IMAGE_SIZE, 1)))
+            number = 3000
+            for i in range(number):
+                self.image_paths.append(self.path_black_image)
+                self.label.append(0.02)
             if self.loadLink:
               if end == None:
                 self.label = self.label[start:]

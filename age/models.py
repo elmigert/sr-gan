@@ -37,13 +37,14 @@ class Generator(nn.Module):
         self.fc = transpose_convolution(c_in=z_dim, c_out=conv_dim * 8, k_size=int(image_size / 16), stride=2, pad=0, bn=False)
         #self.fc = transpose_convolution(c_in=z_dim, c_out=conv_dim * 8, k_size=4, stride=2, pad=0, bn=False)
         self.layer1 = transpose_convolution(c_in=conv_dim * 8, c_out=conv_dim * 8, k_size=4,stride=2)
+        self.layer2 = transpose_convolution(c_in=conv_dim * 8, c_out=conv_dim * 8, k_size=3,stride=1)
         #self.layer2 = transpose_convolution(c_in=conv_dim * 8, c_out=conv_dim * 8, k_size=4,stride=1)
-        self.layer2 = transpose_convolution(c_in=conv_dim * 8, c_out=conv_dim * 4, k_size=4,stride=2)
-        self.layer3 = transpose_convolution(conv_dim * 4, conv_dim * 2, 4,stride=2)
-        self.layer4 = transpose_convolution(conv_dim * 2, conv_dim, 4,stride=2)
-        self.layer5 = transpose_convolution(conv_dim, 1, 3,stride=1, bn=False)
+        self.layer3 = transpose_convolution(c_in=conv_dim * 8, c_out=conv_dim * 4, k_size=4,stride=2)
+        self.layer4 = transpose_convolution(conv_dim * 4, conv_dim * 2, 4,stride=2)
+        self.layer5 = transpose_convolution(conv_dim * 2, conv_dim, 4,stride=2)
+        self.layer6 = transpose_convolution(conv_dim, 1, 3,stride=1, bn=False)
         self.input_size = z_dim
-        
+
         """ --- OLD CODE ---
         self.fc = transpose_convolution(z_dim, conv_dim * 8, int(image_size / 16), 1, 0, bn=False)
         self.layer1 = transpose_convolution(conv_dim * 8, conv_dim * 4, 4)
@@ -59,8 +60,9 @@ class Generator(nn.Module):
         out = leaky_relu(self.layer1(out), 0.05)    # (?, 512, 4, 4)
         out = leaky_relu(self.layer2(out), 0.05)    # (?, 512, 4, 4)
         out = leaky_relu(self.layer3(out), 0.05)    # (?, 256, 8, 8)
-        out = leaky_relu(self.layer4(out), 0.05)    # (?, 128, 16, 16)   # (?, 64, 32, 32)
-        out = tanh(self.layer5(out))                # (?, 1, 128, 128)
+        out = leaky_relu(self.layer4(out), 0.05)
+        out = leaky_relu(self.layer5(out), 0.05)     # (?, 128, 16, 16)   # (?, 64, 32, 32)
+        out = tanh(self.layer6(out))                # (?, 1, 128, 128)
         return out
 
 
